@@ -9,4 +9,4 @@ Demo app using (elasticsearch)[https://www.elastic.co/] for searching over csv f
 - cd {path-to}/node-elastic-api/
 - run **npm install**
 - run **node index.js**
-- open any restful client or browser and type http://localhost:3000/restaurants/search?per_page={optional}&page={optional}.
+- open any restful client or browser and type http://localhost:3000/api/restaurants/search?per_page={optional}&page={optional}.
