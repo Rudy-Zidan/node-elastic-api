@@ -1,6 +1,8 @@
 var express    = require('express'),
     app        = express(),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    elastic    = require('./elastic'),
+    csvHelper  = require('./helpers/csv_helper');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -11,8 +13,18 @@ var router = express.Router();
 
 var enableDebug = true;
 
-router.get('/ping', function(req, res) {
-    res.json({ message: 'pong' });
+csvHelper.convertToJSON("./data_source/restaurants.csv", function(jsonData) {
+  elastic.build(jsonData);
+});
+
+router.get('/restaurants/search', function(req, res) {
+    elastic.search(req.query.per_page, req.query.page , function(err, response) {
+      if(!err) {
+        res.json(response).status(200);
+      } else {
+        res.json(err).status(400);
+      }
+    });
 });
 
 app.use('/api', router);
