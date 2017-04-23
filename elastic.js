@@ -28,10 +28,9 @@ module.exports = {
   },
   documentsIndexing: function(documents) {
     return documents.map(function (document) {
-      document.opening_hr = elasticHelper.setDateWithTime(document.opening_hr)
-      document.closing_hr = elasticHelper.setDateWithTime(document.closing_hr)
+      [document.opening_hr, document.closing_hr] = elasticHelper.setOpeningClosingDates(document.opening_hr, document.closing_hr);
       return [
-        { index: { _index: 'myindex', _type: 'restaurant', _id: document.id } },
+        { index: { _index: 'res_id_index', _type: 'restaurant', _id: document.id } },
         document
       ];
     });
@@ -39,11 +38,8 @@ module.exports = {
   // Elastic Bulk API.
   build: function(documents) {
     this.fieldsMapping();
-    // Indexing each document.
-    var documentsMapping = this.documentsIndexing(documents);
-
     this.client.bulk({
-      body: _.flatten(documentsMapping)
+      body: _.flatten(this.documentsIndexing(documents))
     }, function (err, resp) {
       if(!err) {
         console.log("Indexing Finished");
@@ -56,7 +52,7 @@ module.exports = {
   search: function(docs_per_page = 10, page = 1, callback) {
     var dateTime = elasticHelper.getDateTime();
     this.client.search({
-      index: 'myindex',
+      index: 'res_id_index',
       type: 'restaurant',
       body: {
         query: {
